@@ -2,7 +2,7 @@
     Analyze a provided hidden Markov model using the Viterbi and Forward
     algorithms.
 */
-package com_nshefte;
+package com.nshefte;
 
 /**
  *
