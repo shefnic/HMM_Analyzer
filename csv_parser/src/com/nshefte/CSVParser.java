@@ -60,8 +60,7 @@ public class CSVParser {
                         maxDelim += (ch == 44)? 1:0;
                     }
                 }
-               
-                
+  
             }
         } catch (IOException ex) {
             Logger.getLogger(CSVParser.class.getName()).log(
