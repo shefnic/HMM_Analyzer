@@ -20,11 +20,12 @@ public class csvFSM {
     private String[] input;
     private String[][] output;
     private int delimCount;
-    private int pos;
+    private int inPos;
+    private int cell;
+    private int cellPos;
     
     public csvFSM(String[] in){
-        delimCount = 0;
-        pos = 0;
+
         input = new String[in.length];
         output = new String[in.length][in.length];
         
@@ -42,6 +43,24 @@ public class csvFSM {
      * 
      */
     private void state_i(){
+        delimCount=0;
+        inPos=0;
+        cell=0;
+        cellPos=0;
+        
+        if(input!=null){
+            switch (input[0]) {
+                case ",":
+                    state_1();
+                    break;
+                case "\"":
+                    state_3();
+                    break;
+                default:
+                    state_2();
+                    break;
+            }
+        }else{ state_f(); }
         
     }
     
@@ -56,6 +75,24 @@ public class csvFSM {
      */
     private void state_1(){
         
+        while(",".equals(input[inPos]) && inPos != input.length){
+            delimCount++;
+            inPos++;
+            cell++;
+        }
+        
+        if(inPos == input.length){
+            state_f();
+        }        
+        else if("\"".equals(input[inPos])){
+            inPos++;
+            state_3();
+        }
+        else {
+            //Do not advance
+            state_2();
+        }
+        
     }
     
     /**
@@ -67,6 +104,19 @@ public class csvFSM {
      * 
      */
     private void state_2(){
+        
+        cellPos = 0;
+        
+        while(!(",".equals(input[inPos])) && inPos != input.length){
+            output[cell][cellPos]=input[inPos];
+            inPos++;
+            cellPos++;
+        }
+        
+        if(inPos == input.length){
+            state_f();
+        }
+        else{ state_1(); }
         
     }
     
@@ -82,6 +132,19 @@ public class csvFSM {
      */
     private void state_3(){
         
+        cellPos = 0;
+        
+        while(!("\"".equals(input[inPos])) && inPos != input.length){
+            output[cell][cellPos]=input[inPos];
+            inPos++;
+            cellPos++;
+        }
+        
+        if(inPos == input.length){
+            state_f();
+        }
+        else{ state_4(); }
+        
     }
     
     /**
@@ -94,6 +157,19 @@ public class csvFSM {
      */
     private void state_4(){
         
+        if(inPos+1 == input.length){
+            state_f();
+        }
+        else if(",".equals(input[inPos+1])){
+            inPos++;
+            state_1();
+        }
+        else{
+            output[cell][++cellPos] = input[inPos];
+            inPos++;
+            state_3();
+        }
+        
     }
     
     /**
@@ -101,10 +177,12 @@ public class csvFSM {
      */
     private void state_f(){
         
+        //TODO
+        
     }
     
     public int get_delimCount(){
         return delimCount;
     }
-    
+        
 }
