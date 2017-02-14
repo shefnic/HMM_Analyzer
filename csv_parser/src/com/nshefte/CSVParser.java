@@ -55,6 +55,7 @@ public class CSVParser {
                 tempList.add(line);
                 maxRows++;
                 
+                //TODO: Remove this; max delims will be calculated in the FSM
                 if(first){ //need to check for quotations
                     for (char ch: line.toCharArray()){
                         maxDelim += (ch == 44)? 1:0;
@@ -67,17 +68,25 @@ public class CSVParser {
                              Level.SEVERE, null, ex);
         }
         
-        output = new String[maxDelim][tempList.size()];
+        maxRows = tempList.size();
+        
+        output = new String[maxRows][];
+        
+        for(int i = 0; i < maxRows; i++){
+            csvFSM unparsedLine = new csvFSM(tempList.pop());
+            output[i] = unparsedLine.get_parsedLine();
+            unparsedLine = null;
+        }
         
         return output;
         
     }
     
-    private String[][] parseDelims(String[] stringFile){
-        
-        String[][] parsedMatrix = null;
-        
-        return parsedMatrix;
-    }
+//    private String[][] parseDelims(String[] stringFile){
+//        
+//        String[][] parsedMatrix = null;
+//        
+//        return parsedMatrix;
+//    }
     
 }
