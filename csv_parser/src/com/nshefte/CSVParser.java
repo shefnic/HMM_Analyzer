@@ -8,8 +8,6 @@ package com.nshefte;
 
 import java.io.BufferedReader;
 import java.util.ArrayDeque ;
-import java.util.regex.Pattern;
-import java.util.regex.Matcher;
 import java.io.IOException;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -21,6 +19,8 @@ import java.util.logging.Logger;
  * @author Nicholas
  */
 public class CSVParser {
+    
+    private final static Logger LOGGER = Logger.getLogger(CSVParser.class.getName());
     
     private BufferedReader inCSV;
     private String[][] outCSV;
@@ -39,29 +39,18 @@ public class CSVParser {
         int maxDelim = 0;
         int maxRows = 0;
         String[][] output = null;
-//        String[] temp = null;
         ArrayDeque<String> tempList = null;
         String line = null;
         String cell = "";
         boolean first = true;
         boolean quote = false;
-        //Parsing states
-        boolean beginCell = true;
-        boolean inCell = false;
         
         try {
             while((line = inFile.readLine()) != null){
                 
                 tempList.add(line);
                 maxRows++;
-                
-                //TODO: Remove this; max delims will be calculated in the FSM
-                if(first){ //need to check for quotations
-                    for (char ch: line.toCharArray()){
-                        maxDelim += (ch == 44)? 1:0;
-                    }
-                }
-  
+                  
             }
         } catch (IOException ex) {
             Logger.getLogger(CSVParser.class.getName()).log(
@@ -73,20 +62,25 @@ public class CSVParser {
         output = new String[maxRows][];
         
         for(int i = 0; i < maxRows; i++){
-            csvFSM unparsedLine = new csvFSM(tempList.pop());
-            output[i] = unparsedLine.get_parsedLine();
-            unparsedLine = null;
+            
+//            if(first){
+//                csvFSM unparsedLine = new csvFSM(tempList.pop());
+//                maxDelim = unparsedLine.get_delimCount();
+//                output[i] = unparsedLine.get_parsedLine();
+//                unparsedLine = null;
+//            }
+//            else{
+//                csvFSM unparsedLine = new csvFSM(tempList.pop(), maxDelim);
+//                output[i] = unparsedLine.get_parsedLine();
+//                unparsedLine = null;
+//            }
+                csvFSM unparsedLine = new csvFSM(tempList.pop());
+                output[i] = unparsedLine.get_parsedLine();
+                unparsedLine = null;
         }
         
         return output;
         
     }
-    
-//    private String[][] parseDelims(String[] stringFile){
-//        
-//        String[][] parsedMatrix = null;
-//        
-//        return parsedMatrix;
-//    }
-    
+        
 }

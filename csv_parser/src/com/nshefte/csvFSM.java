@@ -6,7 +6,8 @@
 package com.nshefte;
 
 import java.util.Arrays;
-
+import java.util.logging.Logger;
+import java.util.logging.Level;
 /**
  * Uses FSM principles to parse a String array in to 
  * comma-separated String array 'cells'
@@ -19,6 +20,8 @@ import java.util.Arrays;
  */
 public class csvFSM {
     
+    private final static Logger LOGGER = Logger.getLogger(csvFSM.class.getName());
+    
     private char[] input;
     private char[][] outputChar;
     private String[] output;
@@ -29,7 +32,6 @@ public class csvFSM {
     
     public csvFSM(String in){
 
-        //input = new char[in.length];
         outputChar = new char[in.length()][in.length()];
         
         input = in.toCharArray();
