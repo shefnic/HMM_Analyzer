@@ -39,7 +39,7 @@ public class CSVParser {
         int maxDelim = 0;
         int maxRows = 0;
         String[][] output = null;
-        ArrayDeque<String> tempList = null;
+        ArrayDeque<String> tempList = new ArrayDeque(1);
         String line = null;
         String cell = "";
         boolean first = true;
@@ -81,6 +81,10 @@ public class CSVParser {
         
         return output;
         
+    }
+    
+    public String[][] getCSV(){
+        return outCSV;
     }
         
 }

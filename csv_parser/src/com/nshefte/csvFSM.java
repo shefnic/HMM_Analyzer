@@ -12,9 +12,10 @@ import java.util.logging.Level;
  * Uses FSM principles to parse a String array in to 
  * comma-separated String array 'cells'
  * 
- * TODO: Refactor to use Chars instead of Strings
- * TODO: Thread states to ensure no race conditions between
  * accessing delim count or outputChar and the processing of input
+ * TODO: Use " to escape " to determine if quotes should be part of
+ * stored string. i.e. """Test String""" will be stored as "Test String",
+ * "This ""is"" a test string will be stored as This "is" a test string.
  * 
  * @author Nicholas
  */
@@ -29,6 +30,7 @@ public class csvFSM {
     private int inPos;
     private int cell;
     private int cellPos;
+    private int toState;
     
     public csvFSM(String in){
 
@@ -48,6 +50,9 @@ public class csvFSM {
         System.arraycopy(in, 0, input, 0, in.length);
         
         state_i();
+        
+        //Remove recursion with while-loop case select here
+        
                 
     }
     
@@ -91,11 +96,13 @@ public class csvFSM {
      */
     private void state_1(){
         
-        while(",".equals(input[inPos]) && inPos != input.length){
+//        while(",".equals(input[inPos]) && inPos != input.length){
+        while(','==input[inPos] && inPos != input.length){    
             delimCount++;
             inPos++;
             cell++;
         }
+        
         
         if(inPos == input.length){
             state_f();
@@ -123,11 +130,12 @@ public class csvFSM {
         
         cellPos = 0;
         
-        while(!(','==input[inPos]) && inPos != input.length){
+        while( inPos != input.length && ','!=input[inPos] ){
             outputChar[cell][cellPos]=input[inPos];
             inPos++;
             cellPos++;
         }
+        
         
         if(inPos == input.length){
             state_f();
