@@ -25,24 +25,7 @@ public class CSV_test {
         
         final String INFILE="..\\test_csv.csv";
         CSVParser testCSV = null; 
-        String[][] outFile;
-        
-//		try {
-//			File file = new File(INFILE);
-//			FileReader fileReader = new FileReader(file);
-//			BufferedReader bufferedReader = new BufferedReader(fileReader);
-//			StringBuffer stringBuffer = new StringBuffer();
-//			String line;
-//			while ((line = bufferedReader.readLine()) != null) {
-//				stringBuffer.append(line);
-//				stringBuffer.append("\n");
-//			}
-//			fileReader.close();
-//			System.out.println("Contents of file:");
-//			System.out.println(stringBuffer.toString());
-//		} catch (IOException e) {
-//			e.printStackTrace();
-//		}    
+        String[][] outFile;  
                 
 		try {
 			File file = new File(INFILE);
@@ -52,12 +35,19 @@ public class CSV_test {
                         CSVParser test_csv = new CSVParser(bufferedReader);
                         outFile = test_csv.getCSV();
                         
-                        for(int i=0; i<outFile.length;i++){
-                            for(int j=0; j<outFile[0].length;j++){
-                                System.out.print(outFile[i][j]+" | ");
+                              
+                        for(String[] outString: outFile){
+                            for(String line: outString){
+                                System.out.print(line+" | ");
                             }
                             System.out.println();
                         }
+//                        for(int i=0; i<outFile.length;i++){
+//                            for(int j=0; j<outFile[0].length;j++){
+//                                System.out.print(outFile[i][j]+" | ");
+//                            }
+//                            System.out.println();
+//                        }
                         
 			fileReader.close();
 

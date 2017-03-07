@@ -63,17 +63,6 @@ public class CSVParser {
         
         for(int i = 0; i < maxRows; i++){
             
-//            if(first){
-//                csvFSM unparsedLine = new csvFSM(tempList.pop());
-//                maxDelim = unparsedLine.get_delimCount();
-//                output[i] = unparsedLine.get_parsedLine();
-//                unparsedLine = null;
-//            }
-//            else{
-//                csvFSM unparsedLine = new csvFSM(tempList.pop(), maxDelim);
-//                output[i] = unparsedLine.get_parsedLine();
-//                unparsedLine = null;
-//            }
                 csvFSM unparsedLine = new csvFSM(tempList.pop());
                 output[i] = unparsedLine.get_parsedLine();
                 unparsedLine = null;
