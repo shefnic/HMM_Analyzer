@@ -9,6 +9,8 @@ package com.nshefte;
  * Uses FSM principles to parse a String array in to 
  * comma-separated String array 'cells'
  * 
+ * //TODO: Make thread-safe
+ * 
  * @author Nicholas
  */
 public class csvFSM {
@@ -24,9 +26,9 @@ public class csvFSM {
     
     public csvFSM(String in){
 
-        outputChar = new char[in.length()][in.length()];
+        this.outputChar = new char[in.length()][in.length()];
         
-        input = in.toCharArray();
+        this.input = in.toCharArray();
                     
         state_controller();       
                 
@@ -34,8 +36,8 @@ public class csvFSM {
         
     public csvFSM(char[] in){
 
-        input = new char[in.length];
-        outputChar = new char[in.length][in.length];
+        this.input = new char[in.length];
+        this.outputChar = new char[in.length][in.length];
         
         System.arraycopy(in, 0, input, 0, in.length);
         
@@ -219,7 +221,7 @@ public class csvFSM {
     }
     
     public int get_delimCount(){
-        return delimCount;
+        return this.delimCount;
     }
     
     /**
@@ -227,7 +229,7 @@ public class csvFSM {
      * @return 
      */
     public String[] get_parsedLine(){
-        return output;
+        return this.output;
     }
         
 }

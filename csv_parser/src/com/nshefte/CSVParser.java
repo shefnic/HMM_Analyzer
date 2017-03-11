@@ -13,7 +13,7 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 
 /**
- * Input a csv 'text' file and return a 2-day array
+ * Input a CSV 'text' file and return a 2-day array
  * Allow for column and row headers
  * 
  * @author Nicholas
@@ -26,12 +26,12 @@ public class CSVParser {
     private String[][] outCSV;
     
     public CSVParser() {
-        inCSV = null;
-        outCSV = null;
+        this.inCSV = null;
+        this.outCSV = null;
     }
     
     public CSVParser(BufferedReader inFile){
-        outCSV = parse(inFile);
+        this.outCSV = parse(inFile);
     }
     
     public String[][] parse(BufferedReader inFile){
@@ -73,7 +73,7 @@ public class CSVParser {
     }
     
     public String[][] getCSV(){
-        return outCSV;
+        return this.outCSV;
     }
         
 }

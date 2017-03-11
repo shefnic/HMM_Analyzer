@@ -4,6 +4,13 @@
 */
 package com.nshefte;
 
+import com.nshefte.*;
+import java.io.BufferedReader;
+import java.io.File;
+import java.io.FileReader;
+import java.io.IOException;
+import java.util.ArrayDeque;
+
 /**
  *
  * @author Nicholas
@@ -12,11 +19,79 @@ public class HMM_Analysis {
       
     public static void main(String[] args){
         
-        int[] obs = {};  //Observed emissions;
-        int[] state = {}; //All possible states, must begin with 'Start' state
+        ArrayDeque<String[][]> inputCSVs = new ArrayDeque(0);
+        String[] fileNames = new String[4];
+//        String eFileName=null;
+//        String sFileName=null;
+//        String tFileName=null;
+//        String oFileName=null;
+
+        if(args.length==0){
+            //STDOUT Help
+        }else{
+
+            for(int i = 0; i < args.length; i++){
+                if(args[i].equals("-e") && i+1 < args.length){
+                    fileNames[0]=args[i+1];
+                }
+                if(args[i].equals("-s") && i+1 < args.length){
+                    fileNames[1]=args[i+1];
+                }   
+                if(args[i].equals("-t") && i+1 < args.length){
+                    fileNames[2]=args[i+1];
+                }   
+                if(args[i].equals("-o") && i+1 < args.length){
+                    fileNames[3]=args[i+1];
+                }      
+                if(args[i].equals("-h")||args[i].equals("-help")){
+                    //Goto STDOUT Help
+                }
+            }
+                        
+        for(String fn: fileNames){
+                               
+            try {
+                    File file = new File(fn);
+                    FileReader fileReader = new FileReader(file);
+                    BufferedReader bufferedReader = new BufferedReader(fileReader);
+
+                    CSVParser parsed_csv = new CSVParser(bufferedReader);
+
+                    inputCSVs.add(parsed_csv.getCSV());
+
+                    fileReader.close();
+
+            } catch (IOException e) {
+                    e.printStackTrace(); //Output to logger
+                    System.out.println("Cannot locate file: "+fn);
+            }                  
+                
+        }
         
-        float[][] emission; //emission probability matrix
-        float[][] vector; //vector transition probability matrix
+        if(inputCSVs.size()!=4){
+            //Goto STDOUT Help
+        }
+        
+        
+        //TODO: convert o and s matrices from 2d to 1d arrays
+                
+        Analysis(inputCSVs.pop(), inputCSVs.pop(), 
+            inputCSVs.pop(), inputCSVs.pop());
+
+        }
+        
+    }
+    
+    private static void Analysis(float[][] emission, float[][] vector,
+                                 float[] obs, float[] state){
+        
+//        int[] obs = {};  //Observed emissions;
+//        int[] state = {}; //All possible states, must begin with 'Start' state
+
+        //TODO: Convert csvs from String to float
+        
+//        float[][] emission; //emission probability matrix
+//        float[][] vector; //vector transition probability matrix
         int[] mostLikely; //most likely model states
         float prob; //probability of most likely state
      

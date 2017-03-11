@@ -23,12 +23,57 @@ public class CSV_test {
     public static void main(String[] args) {
         // TODO code application logic here
         
-        final String INFILE="..\\test_csv.csv";
+    String eFileName=null;
+    String sFileName=null;
+
+    if(args.length==0){
+        //STDOUT Help
+    }else{
+
+        for(int i = 0; i < args.length; i++){
+            if(args[i].equals("-e") && i+1 < args.length){
+                eFileName = args[i+1];
+            }
+            if(args[i].equals("-s") && i+1 < args.length){
+                sFileName = args[i+1];
+            }            
+        }
+        
+        if(eFileName.equals(null)||sFileName.equals(null)){
+            //STDOUT Help
+        }
+  
+    }        
+        
+//        final String INFILE="..\\test_csv.csv";
         CSVParser testCSV = null; 
         String[][] outFile;  
                 
 		try {
-			File file = new File(INFILE);
+			File file = new File(sFileName);
+			FileReader fileReader = new FileReader(file);
+			BufferedReader bufferedReader = new BufferedReader(fileReader);
+
+                        CSVParser parsed_csv = new CSVParser(bufferedReader);
+                        outFile = parsed_csv.getCSV();
+                        
+                              
+                        for(String[] outString: outFile){
+                            for(String line: outString){
+                                System.out.print(line+" | ");
+                            }
+                            System.out.println();
+                        }
+                                                                      
+			fileReader.close();
+
+		} catch (IOException e) {
+			e.printStackTrace();
+                        System.out.println("Can not locate file: "+sFileName);
+		}       
+                
+		try {
+			File file = new File(eFileName);
 			FileReader fileReader = new FileReader(file);
 			BufferedReader bufferedReader = new BufferedReader(fileReader);
 
@@ -42,18 +87,13 @@ public class CSV_test {
                             }
                             System.out.println();
                         }
-//                        for(int i=0; i<outFile.length;i++){
-//                            for(int j=0; j<outFile[0].length;j++){
-//                                System.out.print(outFile[i][j]+" | ");
-//                            }
-//                            System.out.println();
-//                        }
-                        
+                                                                      
 			fileReader.close();
 
 		} catch (IOException e) {
 			e.printStackTrace();
-		}                 
+                        System.out.println("Can not locate file: "+eFileName);
+		}                  
                 
     }
     
