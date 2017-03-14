@@ -10,6 +10,7 @@ import java.io.BufferedReader;
 import java.io.File;
 import java.io.FileReader;
 import java.io.IOException;
+import java.util.ArrayDeque;
 
 /**
  *
@@ -25,6 +26,8 @@ public class CSV_test {
         
     String eFileName=null;
     String sFileName=null;
+    ArrayDeque<String[][]> test1 = new ArrayDeque(0);
+    ArrayDeque<float[][]> converttest = new ArrayDeque(0);
 
     if(args.length==0){
         //STDOUT Help
@@ -57,12 +60,28 @@ public class CSV_test {
                         CSVParser parsed_csv = new CSVParser(bufferedReader);
                         outFile = parsed_csv.getCSV();
                         
+                        test1.add(outFile);
+                        
+                        ConvertToFloat(test1, converttest);
+                        
                               
                         for(String[] outString: outFile){
                             for(String line: outString){
                                 System.out.print(line+" | ");
                             }
                             System.out.println();
+                        }
+                        
+                        System.out.println();
+                        System.out.println("Float test");
+                        while(!converttest.isEmpty()){
+                            float[][] temp = converttest.pop();
+                            
+                            for(float[] flt1: temp){
+                                for(float flt: flt1){
+                                    System.out.println(flt+" ");
+                                }
+                            }
                         }
                                                                       
 			fileReader.close();
@@ -96,5 +115,26 @@ public class CSV_test {
 		}                  
                 
     }
+    
+        public static void ConvertToFloat(ArrayDeque inputCSVs, ArrayDeque floatCSVs){
+            
+            String[][] temp_in;
+            float[][] temp_out;
+            
+            while(!inputCSVs.isEmpty()){
+                temp_in = (String[][]) inputCSVs.pop();
+                temp_out = new float[temp_in.length][temp_in[0].length];
+                
+                for(int i = 0; i < temp_in.length; i++){
+                    for(int j = 0; j < temp_in[0].length; j++){
+                        temp_out[i][j] = Float.parseFloat(temp_in[i][j]);
+                    }
+                }
+                
+                floatCSVs.add(temp_out);
+                
+            }
+            
+        }      
     
 }

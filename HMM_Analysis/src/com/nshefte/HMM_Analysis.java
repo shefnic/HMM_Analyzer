@@ -4,7 +4,6 @@
 */
 package com.nshefte;
 
-import com.nshefte.*;
 import java.io.BufferedReader;
 import java.io.File;
 import java.io.FileReader;
@@ -20,11 +19,13 @@ public class HMM_Analysis {
     public static void main(String[] args){
         
         ArrayDeque<String[][]> inputCSVs = new ArrayDeque(0);
+        float[][][] e_v = new float[2][][];
+        int[][] o_s = new int[2][];
+//        float[][] emission;
+//        float[][] vector;
+//        int[] obs;
+//        int[] state;
         String[] fileNames = new String[4];
-//        String eFileName=null;
-//        String sFileName=null;
-//        String tFileName=null;
-//        String oFileName=null;
 
         if(args.length==0){
             //STDOUT Help
@@ -48,42 +49,37 @@ public class HMM_Analysis {
                 }
             }
                         
-        for(String fn: fileNames){
-                               
-            try {
-                    File file = new File(fn);
-                    FileReader fileReader = new FileReader(file);
-                    BufferedReader bufferedReader = new BufferedReader(fileReader);
+            for(String fn: fileNames){
 
-                    CSVParser parsed_csv = new CSVParser(bufferedReader);
+                try {
+                        File file = new File(fn);
+                        FileReader fileReader = new FileReader(file);
+                        BufferedReader bufferedReader = 
+                            new BufferedReader(fileReader);
 
-                    inputCSVs.add(parsed_csv.getCSV());
+                        CSVParser parsed_csv = new CSVParser(bufferedReader);
 
-                    fileReader.close();
+                        inputCSVs.add(parsed_csv.getCSV());
 
-            } catch (IOException e) {
-                    e.printStackTrace(); //Output to logger
-                    System.out.println("Cannot locate file: "+fn);
-            }                  
-                
-        }
+                        fileReader.close();
+
+                } catch (IOException e) {
+                        System.out.println("Cannot locate file: "+fn);
+                }                  
+            }
         
-        if(inputCSVs.size()!=4){
-            //Goto STDOUT Help
-        }
-        
-        
-        //TODO: convert o and s matrices from 2d to 1d arrays
-                
-        Analysis(inputCSVs.pop(), inputCSVs.pop(), 
-            inputCSVs.pop(), inputCSVs.pop());
+            if(inputCSVs.size()!=4){
+                //Goto STDOUT Help
+            }
+
+            FormatMatrices(inputCSVs, e_v, o_s);
+            Analysis(e_v[0], e_v[1], o_s[0], o_s[1]);
 
         }
-        
     }
     
     private static void Analysis(float[][] emission, float[][] vector,
-                                 float[] obs, float[] state){
+                                 int[] obs, int[] state){
         
 //        int[] obs = {};  //Observed emissions;
 //        int[] state = {}; //All possible states, must begin with 'Start' state
@@ -246,7 +242,7 @@ public class HMM_Analysis {
         }
         
         /**
-         * 
+         * Sums the array of emission * vector probabilities
          * @param vect
          * @param obs
          * @param dyTable
@@ -275,8 +271,65 @@ public class HMM_Analysis {
             //NOTE ADAPT TO USE OBJECTS HOLDING MOSTLIKELY, PROB AND
             //BOTH VITERBI AND FORWARD MATRICES
         }
+        
+        /**
+         * Pops the Deque and transcribes String values in to floats
+         * @param inputCSVs 
+         * @param e_v 
+         * @param o_s 
+         */               
+        public static void FormatMatrices(ArrayDeque inputCSVs
+                                           ,float[][][] e_v, int[][] o_s){
+            
+            String[][] temp_in;
+            float[][] temp_fout;
+            int[] temp_iout;
+            
+            while(!inputCSVs.isEmpty()){
+                
+                //Convert emission and vector matrices from String to float
+                for(int f_count = 0; f_count < 3; f_count++){
+                    temp_in = (String[][]) inputCSVs.pop();
+                    
+                    //float matrices declared one size larger than necessary
+                    //to simplify pointers used in the algorithm
+                    temp_fout = new float[temp_in.length+1][temp_in[0].length];
+
+                    for(int i = 1; i < temp_in.length+1; i++){
+                        for(int j = 0; j < temp_in[0].length; j++){
+                            try{
+                                temp_fout[i][j] = Float.parseFloat(temp_in[i][j]);
+                            }
+                            catch(NumberFormatException nfe){
+                                System.out.println("Could not convert "
+                                                    +temp_in[i][j]
+                                                    +" to float");
+                            }
+                        }
+                    }
+                    e_v[f_count] = temp_fout;
+                }
+                
+                //Convert obs and state matrices from String to int
+                for(int f_count = 0; f_count < 3; f_count++){
+                    temp_in = (String[][]) inputCSVs.pop();
+
+                    temp_iout = new int[temp_in.length];
+
+                    for(int i = 0; i < temp_in.length; i++){
+                        try{
+                            temp_iout[i] = Integer.parseInt(temp_in[i][0]);
+                        }
+                        catch(NumberFormatException nfe){
+                            System.out.println("Could not convert "
+                                                +temp_in[i][0]
+                                                +" to int");
+                        }
+                    }
+                    o_s[f_count] = temp_iout;
+                }                
+                  
+            }
+        }        
     
 }  
-    
-    
-
