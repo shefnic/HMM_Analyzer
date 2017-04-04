@@ -35,19 +35,20 @@ public class HMM_Analysis {
                 if(args[i].equals("-e") && i+1 < args.length){
                     fileNames[0]=args[i+1];
                 }
-                if(args[i].equals("-s") && i+1 < args.length){
+                if(args[i].equals("-v") && i+1 < args.length){
                     fileNames[1]=args[i+1];
                 }   
-                if(args[i].equals("-t") && i+1 < args.length){
+                if(args[i].equals("-o") && i+1 < args.length){
                     fileNames[2]=args[i+1];
                 }   
-                if(args[i].equals("-o") && i+1 < args.length){
+                if(args[i].equals("-s") && i+1 < args.length){
                     fileNames[3]=args[i+1];
                 }      
                 if(args[i].equals("-h")||args[i].equals("-help")){
                     //Goto STDOUT Help
                 }
             }
+            
                         
             for(String fn: fileNames){
 
@@ -65,6 +66,7 @@ public class HMM_Analysis {
 
                 } catch (IOException e) {
                         System.out.println("Cannot locate file: "+fn);
+                        System.exit(1);
                 }                  
             }
         
@@ -73,6 +75,7 @@ public class HMM_Analysis {
             }
 
             FormatMatrices(inputCSVs, e_v, o_s);
+//            TestMatrices(e_v, o_s); //REMOVE
             Analysis(e_v[0], e_v[1], o_s[0], o_s[1]);
 
         }
@@ -288,22 +291,23 @@ public class HMM_Analysis {
             while(!inputCSVs.isEmpty()){
                 
                 //Convert emission and vector matrices from String to float
-                for(int f_count = 0; f_count < 3; f_count++){
+                for(int f_count = 0; f_count < 2; f_count++){
                     temp_in = (String[][]) inputCSVs.pop();
                     
                     //float matrices declared one size larger than necessary
                     //to simplify pointers used in the algorithm
-                    temp_fout = new float[temp_in.length+1][temp_in[0].length];
+                    temp_fout = new float[temp_in.length+1][temp_in[0].length+1];
 
-                    for(int i = 1; i < temp_in.length+1; i++){
+                    for(int i = 0; i < temp_in.length; i++){
                         for(int j = 0; j < temp_in[0].length; j++){
                             try{
-                                temp_fout[i][j] = Float.parseFloat(temp_in[i][j]);
+                                temp_fout[i+1][j+1] = Float.parseFloat(temp_in[i][j]);
                             }
                             catch(NumberFormatException nfe){
                                 System.out.println("Could not convert "
                                                     +temp_in[i][j]
-                                                    +" to float");
+                                                    +" to float. Exiting...");
+                                System.exit(1);
                             }
                         }
                     }
@@ -311,7 +315,7 @@ public class HMM_Analysis {
                 }
                 
                 //Convert obs and state matrices from String to int
-                for(int f_count = 0; f_count < 3; f_count++){
+                for(int f_count = 0; f_count < 2; f_count++){
                     temp_in = (String[][]) inputCSVs.pop();
 
                     temp_iout = new int[temp_in.length];
@@ -323,7 +327,8 @@ public class HMM_Analysis {
                         catch(NumberFormatException nfe){
                             System.out.println("Could not convert "
                                                 +temp_in[i][0]
-                                                +" to int");
+                                                +" to int. Exiting...");
+                            System.exit(1);
                         }
                     }
                     o_s[f_count] = temp_iout;
@@ -331,5 +336,47 @@ public class HMM_Analysis {
                   
             }
         }        
+        
+        public static void TestMatrices(float[][][] e_v, int[][] o_s){
+            
+            System.out.println("Emission Matrix");
+            
+            for(int i=0; i<e_v[0].length;i++){
+                for(int j=0; j<e_v[0][0].length;j++){
+                    System.out.print(e_v[0][i][j]+" ");
+                }
+                System.out.println();
+            }
+            
+            System.out.println();
+            System.out.println("Vector Matrix");
+            
+            for(int i=0; i<e_v[1].length;i++){
+                for(int j=0; j<e_v[1][0].length;j++){
+                    System.out.print(e_v[1][i][j]+" ");
+                }
+                System.out.println();
+            }            
+            
+            System.out.println();
+            System.out.println("Observations Matrix");
+            for(int i=0; i<o_s.length;i++){
+                for(int j=0; j<o_s[0].length;j++){
+                    System.out.print(o_s[0][j]+" ");
+                }
+                System.out.println();
+            }
+            
+            System.out.println();
+            System.out.println("States Matrix");
+            for(int i=0; i<o_s.length;i++){
+                for(int j=0; j<o_s[1].length;j++){
+                    System.out.print(o_s[1][j]+" ");
+                }
+                System.out.println();
+            }            
+            
+            System.exit(0);
+        }
     
 }  
