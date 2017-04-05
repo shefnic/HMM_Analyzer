@@ -21,16 +21,14 @@ public class HMM_Analysis {
         ArrayDeque<String[][]> inputCSVs = new ArrayDeque(0);
         float[][][] e_v = new float[2][][];
         int[][] o_s = new int[2][];
-//        float[][] emission;
-//        float[][] vector;
-//        int[] obs;
-//        int[] state;
         String[] fileNames = new String[4];
 
         if(args.length==0){
             //STDOUT Help
         }else{
 
+            //Stores the name in a specific order to be used later for
+            //formatting the CSVs in to their appropriate matrices
             for(int i = 0; i < args.length; i++){
                 if(args[i].equals("-e") && i+1 < args.length){
                     fileNames[0]=args[i+1];
@@ -84,13 +82,6 @@ public class HMM_Analysis {
     private static void Analysis(float[][] emission, float[][] vector,
                                  int[] obs, int[] state){
         
-//        int[] obs = {};  //Observed emissions;
-//        int[] state = {}; //All possible states, must begin with 'Start' state
-
-        //TODO: Convert csvs from String to float
-        
-//        float[][] emission; //emission probability matrix
-//        float[][] vector; //vector transition probability matrix
         int[] mostLikely; //most likely model states
         float prob; //probability of most likely state
      
@@ -110,22 +101,17 @@ public class HMM_Analysis {
             int[][] dirTable = new int[state.length][obs.length]; //traceback
             
             //Initialize
-            dyTable[0][0] = 1;
+            dyTable[0][0] = 1; //Dynamic table
+            dirTable[0][0] = 0; //Directional table
             for(int i = 1; i < obs.length; i++){
                 dyTable[0][i] = 0;
+                dirTable[0][i] = 0;
             } 
             for(int j = 1; j < state.length; j++){
                 dyTable[j][0] = 0;
+                dirTable[j][0] = 0;
             }
             
-            for(int i = 0; i < obs.length; i++){
-                dirTable[0][i] = 0;
-                dirTable[0][i] = 0;
-            }
-            for(int j = 1; j < state.length; j++){
-                dirTable[j][0] = 0;
-                dirTable[j][0] = 0;
-            }
             
             //Viterbi Algorithm
             for(int i = 1; i < obs.length; i++){
@@ -183,6 +169,7 @@ public class HMM_Analysis {
             
             while(pointer >= 0){
                 series[pointer] = state[tempJ];
+                tempJ = dirTable[tempJ][pointer];
                 pointer--;
             }
             
@@ -273,6 +260,14 @@ public class HMM_Analysis {
         static void Results(int[] mostLikely, float prob){
             //NOTE ADAPT TO USE OBJECTS HOLDING MOSTLIKELY, PROB AND
             //BOTH VITERBI AND FORWARD MATRICES
+            
+            //Temporary results output
+            System.out.println("Prob: "+prob);
+            System.out.println("Most likely states:");
+            for(int state: mostLikely){
+                System.out.print(state+" ");
+            }
+            
         }
         
         /**
@@ -291,17 +286,39 @@ public class HMM_Analysis {
             while(!inputCSVs.isEmpty()){
                 
                 //Convert emission and vector matrices from String to float
+//                for(int f_count = 0; f_count < 2; f_count++){
+//                    temp_in = (String[][]) inputCSVs.pop();
+//                    
+//                    //float matrices declared one size larger than necessary
+//                    //to simplify pointers used in the algorithm
+//                    temp_fout = new float[temp_in.length+1][temp_in[0].length+1];
+//
+//                    for(int i = 0; i < temp_in.length; i++){
+//                        for(int j = 0; j < temp_in[0].length; j++){
+//                            try{
+//                                temp_fout[i+1][j+1] = Float.parseFloat(temp_in[i][j]);
+//                            }
+//                            catch(NumberFormatException nfe){
+//                                System.out.println("Could not convert "
+//                                                    +temp_in[i][j]
+//                                                    +" to float. Exiting...");
+//                                System.exit(1);
+//                            }
+//                        }
+//                    }
+//                    e_v[f_count] = temp_fout;
+//                }
+//                
+                
                 for(int f_count = 0; f_count < 2; f_count++){
                     temp_in = (String[][]) inputCSVs.pop();
                     
-                    //float matrices declared one size larger than necessary
-                    //to simplify pointers used in the algorithm
-                    temp_fout = new float[temp_in.length+1][temp_in[0].length+1];
+                    temp_fout = new float[temp_in.length][temp_in[0].length];
 
                     for(int i = 0; i < temp_in.length; i++){
                         for(int j = 0; j < temp_in[0].length; j++){
                             try{
-                                temp_fout[i+1][j+1] = Float.parseFloat(temp_in[i][j]);
+                                temp_fout[i][j] = Float.parseFloat(temp_in[i][j]);
                             }
                             catch(NumberFormatException nfe){
                                 System.out.println("Could not convert "
@@ -313,6 +330,7 @@ public class HMM_Analysis {
                     }
                     e_v[f_count] = temp_fout;
                 }
+                
                 
                 //Convert obs and state matrices from String to int
                 for(int f_count = 0; f_count < 2; f_count++){
