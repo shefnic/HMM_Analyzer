@@ -154,9 +154,6 @@ public class csvFSM {
      * If '"' then moves to state 4
      * Otherwise, stay in state 3
      * 
-     * TODO: If end of array met before a closing '"' is found, insert the
-     * '"' to the beginning of the outputChar array 'cell' and move to final state
-     * 
      */
     private void state_3(){
         

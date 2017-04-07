@@ -24,7 +24,7 @@ public class HMM_Analysis {
         String[] fileNames = new String[4];
 
         if(args.length==0){
-            //STDOUT Help
+            HelpScreen();
         }else{
 
             //Stores the name in a specific order to be used later for
@@ -43,7 +43,7 @@ public class HMM_Analysis {
                     fileNames[3]=args[i+1];
                 }      
                 if(args[i].equals("-h")||args[i].equals("-help")){
-                    //Goto STDOUT Help
+                    HelpScreen();
                 }
             }
             
@@ -69,16 +69,27 @@ public class HMM_Analysis {
             }
         
             if(inputCSVs.size()!=4){
-                //Goto STDOUT Help
+                HelpScreen();
             }
 
             FormatMatrices(inputCSVs, e_v, o_s);
-//            TestMatrices(e_v, o_s); //REMOVE
             Analysis(e_v[0], e_v[1], o_s[0], o_s[1]);
 
         }
     }
     
+    /**
+     * Calls on the Viterbi algorithm to find the most likely set of states
+     * given the input observations, then calls the Forward algorithm
+     * to determine the probability of that specific set of states
+     * occurring.
+     * Both results are then displayed.
+     * 
+     * @param emission
+     * @param vector
+     * @param obs
+     * @param state 
+     */
     private static void Analysis(float[][] emission, float[][] vector,
                                  int[] obs, int[] state){
         
@@ -88,313 +99,324 @@ public class HMM_Analysis {
         mostLikely = Viterbi(obs, state, emission, vector);
         prob = Forward(obs, state, emission, vector);
 
-        Results(mostLikely, prob);
+        Results(obs, mostLikely, prob);
         
     }
         
-    //UPDATE TO RETURN AN OBJECT HOLDING THE SERIES AND DYTABLE GRID FOR SHOW
-        private static int[] Viterbi(int[] obs, int[] state, 
-                                    float[][] emit, float[][] vect){
-            
-            int[] series; //solution
-            float[][] dyTable = new float[state.length][obs.length];
-            int[][] dirTable = new int[state.length][obs.length]; //traceback
-            
-            //Initialize
-            dyTable[0][0] = 1; //Dynamic table
-            dirTable[0][0] = 0; //Directional table
-            for(int i = 1; i < obs.length; i++){
-                dyTable[0][i] = 0;
-                dirTable[0][i] = 0;
-            } 
-            for(int j = 1; j < state.length; j++){
-                dyTable[j][0] = 0;
-                dirTable[j][0] = 0;
-            }
-            
-            
-            //Viterbi Algorithm
-            for(int i = 1; i < obs.length; i++){
-                for(int j = 1; j < state.length; j++){
-                    dyTable[j][i] = emit[j][obs[i]] 
-                                    * max(vect, obs, dyTable, dirTable, i-1, j);
-                }
-            }
-            
-            int finalJ = 0;
-            for(int j = 1; j < dyTable.length; j++){
-                if(dyTable[j][dyTable[0].length-1] > finalJ){
-                    finalJ = j;
-                }
-            }
-            
-            series = trace(state, dirTable, finalJ);
-            
-            return series;  //MAKE THIS AN OBJECT TO HOLD THE ARRAY AND THE DYTABLE GRID
-            
-        }
-        
-        static float max(float[][] vect, int[] obs, float[][] dyTable, 
-                         int[][] dirTable, int emit, int state){
-            
-            float tempVal;
-            float maxVal = 0f;
-            
-            for(int w = 0; w < dyTable.length; w++){
-                tempVal = dyTable[w][emit] * vect[w][state];
-                
-                if(tempVal > maxVal){
-                    maxVal = tempVal;
-                    dirTable[state][emit+1] = w;
-                }
-            }
-            
-            return maxVal;
-            
-        }
-        
-        /**
-         * Returns the path of the most likely state changes
-         * 
-         * @param state
-         * @param dirTable
-         * @param j
-         * @return 
-         */
-        static int[] trace(int[] state, int[][] dirTable, int j){
-            
-            int[] series = new int[dirTable[0].length];
-            int pointer = dirTable[0].length-1;
-            int tempJ = j;
-            
-            while(pointer >= 0){
-                series[pointer] = state[tempJ];
-                tempJ = dirTable[tempJ][pointer];
-                pointer--;
-            }
-            
-            return series;
-            
-        }
-        
-        /**
-         * Calculates the probability of the most likely set of emissions
-         * @param obs
-         * @param state
-         * @param emit
-         * @param vect
-         * @return 
-         */
-        static float Forward(int[] obs, int[] state, float[][] emit,
-                             float[][] vect){
-            
-            //UPDATE TO RETURN OBJECT HOLDING PROB AND SOLUTION MATRIX
-            
-            float[][] dyTable = new float[state.length][obs.length];
-            int[][] dirTable = new int[state.length][obs.length];
-            
-            //Initialize
-            dyTable[0][0] = 1f;
-            for(int i = 1; i < obs.length; i++){
-                dyTable[0][i] = 0f;
-            }
-            for(int j = 1; j < state.length; j++){
-                dyTable[j][0] = 0f;
-            }
-            
-            for(int i = 0; i < obs.length; i++){
-                dirTable[0][i] = 0;
-            }
-            for(int j = 1; j < state.length; j++){
-                dirTable[j][0] = 0;
-            }
-            
-            //Algorithm
-            for(int i = 1; i < obs.length; i++){
-                for(int j = 1; j < state.length; j++){
-                    dyTable[j][i] = emit[j][obs[i]] 
-                                    * sum(vect, obs, dyTable, i-1, j);
-                }
-            }
-            
-            //Solution
-            float prob = 0f;
-            
-            for(int j = 0; j < dyTable.length; j++){
-                if(dyTable[j][dyTable[0].length-1] > prob){
-                    prob = dyTable[j][dyTable[0].length-1];
-                }
-            }
-            
-            //UPDATE TO RETURN OBJECT HOLDING PROB AND SOLUTION MATRIX
-            return prob;
-            
-        }
-        
-        /**
-         * Sums the array of emission * vector probabilities
-         * @param vect
-         * @param obs
-         * @param dyTable
-         * @param i
-         * @param j
-         * @return 
-         */
-        static float sum(float[][] vect, int[] obs, float[][] dyTable,
-                         int emit, int state){
-            
-            float sum = 0f;
-            
-            for(int w = 0; w < dyTable.length; w++){
-                sum += dyTable[w][emit] * vect[w][state];
-            }
-            
-            return sum;
-        }
-        
-        /**
-         * Outputs results from algorithmic analysis
-         * @param mostLikely
-         * @param prob 
-         */
-        static void Results(int[] mostLikely, float prob){
-            //NOTE ADAPT TO USE OBJECTS HOLDING MOSTLIKELY, PROB AND
-            //BOTH VITERBI AND FORWARD MATRICES
-            
-            //Temporary results output
-            System.out.println("Prob: "+prob);
-            System.out.println("Most likely states:");
-            for(int state: mostLikely){
-                System.out.print(state+" ");
-            }
-            
-        }
-        
-        /**
-         * Pops the Deque and transcribes String values in to floats
-         * @param inputCSVs 
-         * @param e_v 
-         * @param o_s 
-         */               
-        public static void FormatMatrices(ArrayDeque inputCSVs
-                                           ,float[][][] e_v, int[][] o_s){
-            
-            String[][] temp_in;
-            float[][] temp_fout;
-            int[] temp_iout;
-            
-            while(!inputCSVs.isEmpty()){
-                
-                //Convert emission and vector matrices from String to float
-//                for(int f_count = 0; f_count < 2; f_count++){
-//                    temp_in = (String[][]) inputCSVs.pop();
-//                    
-//                    //float matrices declared one size larger than necessary
-//                    //to simplify pointers used in the algorithm
-//                    temp_fout = new float[temp_in.length+1][temp_in[0].length+1];
-//
-//                    for(int i = 0; i < temp_in.length; i++){
-//                        for(int j = 0; j < temp_in[0].length; j++){
-//                            try{
-//                                temp_fout[i+1][j+1] = Float.parseFloat(temp_in[i][j]);
-//                            }
-//                            catch(NumberFormatException nfe){
-//                                System.out.println("Could not convert "
-//                                                    +temp_in[i][j]
-//                                                    +" to float. Exiting...");
-//                                System.exit(1);
-//                            }
-//                        }
-//                    }
-//                    e_v[f_count] = temp_fout;
-//                }
-//                
-                
-                for(int f_count = 0; f_count < 2; f_count++){
-                    temp_in = (String[][]) inputCSVs.pop();
-                    
-                    temp_fout = new float[temp_in.length][temp_in[0].length];
+    /**
+     * Uses the Viterbi algorithm to identify the most likely set of states
+     * that would conform to the given set of observations in the model.
+     * 
+     * @param obs
+     * @param state
+     * @param emit
+     * @param vect
+     * @return 
+     */
+    private static int[] Viterbi(int[] obs, int[] state, 
+                                float[][] emit, float[][] vect){
 
-                    for(int i = 0; i < temp_in.length; i++){
-                        for(int j = 0; j < temp_in[0].length; j++){
-                            try{
-                                temp_fout[i][j] = Float.parseFloat(temp_in[i][j]);
-                            }
-                            catch(NumberFormatException nfe){
-                                System.out.println("Could not convert "
-                                                    +temp_in[i][j]
-                                                    +" to float. Exiting...");
-                                System.exit(1);
-                            }
-                        }
-                    }
-                    e_v[f_count] = temp_fout;
-                }
-                
-                
-                //Convert obs and state matrices from String to int
-                for(int f_count = 0; f_count < 2; f_count++){
-                    temp_in = (String[][]) inputCSVs.pop();
+        int[] series; //solution
+        float[][] dyTable = new float[state.length][obs.length];
+        int[][] dirTable = new int[state.length][obs.length]; //traceback
 
-                    temp_iout = new int[temp_in.length];
+        //Initialize
+        dyTable[0][0] = 1; //Dynamic table
+        dirTable[0][0] = 0; //Directional table
+        for(int i = 1; i < obs.length; i++){
+            dyTable[0][i] = 0;
+            dirTable[0][i] = 0;
+        } 
+        for(int j = 1; j < state.length; j++){
+            dyTable[j][0] = 0;
+            dirTable[j][0] = 0;
+        }
 
-                    for(int i = 0; i < temp_in.length; i++){
+
+        //Viterbi Algorithm
+        for(int i = 1; i < obs.length; i++){
+            for(int j = 1; j < state.length; j++){
+                dyTable[j][i] = emit[j][obs[i]] 
+                                * max(vect, obs, dyTable, dirTable, i-1, j);
+            }
+        }
+
+        int finalJ = 0;
+        for(int j = 1; j < dyTable.length; j++){
+            if(dyTable[j][dyTable[0].length-1] > finalJ){
+                finalJ = j;
+            }
+        }
+
+        series = trace(state, dirTable, finalJ);
+
+        return series;  
+
+    }
+
+    /**
+     * Max determines inserts the position of the highest probability of hte
+     * emission*state to directional table, then returns the value of that
+     * probability.
+     * 
+     * @param vect
+     * @param obs
+     * @param dyTable
+     * @param dirTable
+     * @param emit
+     * @param state
+     * @return 
+     */
+    static float max(float[][] vect, int[] obs, float[][] dyTable, 
+                     int[][] dirTable, int emit, int state){
+
+        float tempVal;
+        float maxVal = 0f;
+
+        for(int w = 0; w < dyTable.length; w++){
+            tempVal = dyTable[w][emit] * vect[w][state];
+
+            if(tempVal > maxVal){
+                maxVal = tempVal;
+                dirTable[state][emit+1] = w;
+            }
+        }
+
+        return maxVal;
+
+    }
+
+    /**
+     * Returns the path of the most likely state changes.
+     * 
+     * @param state
+     * @param dirTable
+     * @param j
+     * @return 
+     */
+    static int[] trace(int[] state, int[][] dirTable, int j){
+
+        int[] series = new int[dirTable[0].length];
+        int pointer = dirTable[0].length-1;
+        int tempJ = j;
+
+        while(pointer >= 0){
+            series[pointer] = state[tempJ];
+            tempJ = dirTable[tempJ][pointer];
+            pointer--;
+        }
+
+        return series;
+
+    }
+
+    /**
+     * Calculates the probability of most likely set of states, given 
+     * the input observations.
+     * 
+     * @param obs
+     * @param state
+     * @param emit
+     * @param vect
+     * @return 
+     */
+    static float Forward(int[] obs, int[] state, float[][] emit,
+                         float[][] vect){
+
+
+        float[][] dyTable = new float[state.length][obs.length];
+        int[][] dirTable = new int[state.length][obs.length];
+
+        //Initialize
+        dyTable[0][0] = 1f;
+        for(int i = 1; i < obs.length; i++){
+            dyTable[0][i] = 0f;
+        }
+        for(int j = 1; j < state.length; j++){
+            dyTable[j][0] = 0f;
+        }
+
+        for(int i = 0; i < obs.length; i++){
+            dirTable[0][i] = 0;
+        }
+        for(int j = 1; j < state.length; j++){
+            dirTable[j][0] = 0;
+        }
+
+        //Forward Algorithm
+        for(int i = 1; i < obs.length; i++){
+            for(int j = 1; j < state.length; j++){
+                dyTable[j][i] = emit[j][obs[i]] 
+                                * sum(vect, obs, dyTable, i-1, j);
+            }
+        }
+
+        //Solution
+        float prob = 0f;
+
+        for(int j = 0; j < dyTable.length; j++){
+            if(dyTable[j][dyTable[0].length-1] > prob){
+                prob = dyTable[j][dyTable[0].length-1];
+            }
+        }
+
+        return prob;
+
+    }
+
+    /**
+     * Sums the array of emission * vector probabilities
+     * @param vect
+     * @param obs
+     * @param dyTable
+     * @param i
+     * @param j
+     * @return 
+     */
+    static float sum(float[][] vect, int[] obs, float[][] dyTable,
+                     int emit, int state){
+
+        float sum = 0f;
+
+        for(int w = 0; w < dyTable.length; w++){
+            sum += dyTable[w][emit] * vect[w][state];
+        }
+
+        return sum;
+    }
+
+    /**
+     * Outputs results from algorithmic analysis
+     * @param mostLikely
+     * @param prob 
+     */
+    static void Results(int[] obs, int[] mostLikely, float prob){
+
+        for(int i=0;i<100;i++){System.out.print("*");}
+        System.out.println();
+        System.out.print("Given the set of observations: ");
+        for(int ob: obs){
+            System.out.print(ob+" ");
+        }
+        System.out.println();
+        System.out.println();
+        
+        System.out.print("The most likely set of states is: ");
+        for(int state: mostLikely){
+            System.out.print(state+" ");
+        }
+        System.out.println();
+        
+        System.out.println("The probability of this set occurring is: "+prob);
+        
+        for(int i=0;i<100;i++){System.out.print("*");}
+        System.out.println();
+
+        
+    }
+
+    /**
+     * Pops the Deque and transcribes String values in to floats
+     * @param inputCSVs 
+     * @param e_v 
+     * @param o_s 
+     */               
+    public static void FormatMatrices(ArrayDeque inputCSVs
+                                       ,float[][][] e_v, int[][] o_s){
+
+        String[][] temp_in;
+        float[][] temp_fout;
+        int[] temp_iout;
+
+        while(!inputCSVs.isEmpty()){
+
+            for(int f_count = 0; f_count < 2; f_count++){
+                temp_in = (String[][]) inputCSVs.pop();
+
+                temp_fout = new float[temp_in.length][temp_in[0].length];
+
+                for(int i = 0; i < temp_in.length; i++){
+                    for(int j = 0; j < temp_in[0].length; j++){
                         try{
-                            temp_iout[i] = Integer.parseInt(temp_in[i][0]);
+                            temp_fout[i][j] = Float.parseFloat(temp_in[i][j]);
                         }
                         catch(NumberFormatException nfe){
                             System.out.println("Could not convert "
-                                                +temp_in[i][0]
-                                                +" to int. Exiting...");
+                                                +temp_in[i][j]
+                                                +" to float. Exiting...");
                             System.exit(1);
                         }
                     }
-                    o_s[f_count] = temp_iout;
-                }                
-                  
+                }
+                e_v[f_count] = temp_fout;
             }
-        }        
+
+
+            //Convert obs and state matrices from String to int
+            for(int f_count = 0; f_count < 2; f_count++){
+                temp_in = (String[][]) inputCSVs.pop();
+
+                temp_iout = new int[temp_in.length];
+
+                for(int i = 0; i < temp_in.length; i++){
+                    try{
+                        temp_iout[i] = Integer.parseInt(temp_in[i][0]);
+                    }
+                    catch(NumberFormatException nfe){
+                        System.out.println("Could not convert "
+                                            +temp_in[i][0]
+                                            +" to int. Exiting...");
+                        System.exit(1);
+                    }
+                }
+                o_s[f_count] = temp_iout;
+            }                
+
+        }//End while inputCSV !empty
+    }        
+
+    
+    /**
+     * Displays application information and help screen instructions
+     * then exits the program.
+     */
+    public static void HelpScreen(){
+        System.out.println("Hidden Markov Model Analyzer");
+        System.out.println("Author: Nicholas Shefte, 2017");
+        System.out.println();
+        System.out.println("This application implements the Virterbi and"
+                           +"Foward algorithms to analyze a given Hidden"
+                           +" Markov Model represented by a set of four"
+                           +" comma-separated files.");
+        System.out.println();
+        System.out.println("Accepted arguments:");
+        System.out.println("-e\t[REQUIRED]Emission Matrix file - Comma-"
+                           +"separated - A matrix of probabilities in "
+                           +"decimal form for each emission that can be"
+                           +" emitted from each state.");
+        System.out.println();
+        System.out.println("-v\t[REQUIRED]Vector Matrix file - Comma-separated"
+                           +" - A matrix of probabilities in decimal form for"
+                           +" the transition of each state to the next.");
+        System.out.println();
+        System.out.println("-s\t[REQUIRED]State list file - A list of all"
+                           + " possible states in the model.");
+        System.out.println();
+        System.out.println("-e\t[REQUIRED]Observed emissions file - A list"
+                           +" of the sequence of emissions observed from the"
+                           + " active model.");
+        System.out.println();
+        System.out.println("-h\tDisplays this help screen.");
+        System.out.println();
+        System.out.println("-help\tDisplays this help screen.");
+        for(int i=0;i<40;i++){System.out.print("*");}
+        System.out.println();
+        System.out.println("For instructions on setting up the required files"
+                           +" visit https://github.com/shefnic/HMM_Analyzer");
         
-        public static void TestMatrices(float[][][] e_v, int[][] o_s){
-            
-            System.out.println("Emission Matrix");
-            
-            for(int i=0; i<e_v[0].length;i++){
-                for(int j=0; j<e_v[0][0].length;j++){
-                    System.out.print(e_v[0][i][j]+" ");
-                }
-                System.out.println();
-            }
-            
-            System.out.println();
-            System.out.println("Vector Matrix");
-            
-            for(int i=0; i<e_v[1].length;i++){
-                for(int j=0; j<e_v[1][0].length;j++){
-                    System.out.print(e_v[1][i][j]+" ");
-                }
-                System.out.println();
-            }            
-            
-            System.out.println();
-            System.out.println("Observations Matrix");
-            for(int i=0; i<o_s.length;i++){
-                for(int j=0; j<o_s[0].length;j++){
-                    System.out.print(o_s[0][j]+" ");
-                }
-                System.out.println();
-            }
-            
-            System.out.println();
-            System.out.println("States Matrix");
-            for(int i=0; i<o_s.length;i++){
-                for(int j=0; j<o_s[1].length;j++){
-                    System.out.print(o_s[1][j]+" ");
-                }
-                System.out.println();
-            }            
-            
-            System.exit(0);
-        }
+        System.exit(0);
+        
+        
+    }
     
 }  
