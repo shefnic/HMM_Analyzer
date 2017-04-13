@@ -15,6 +15,8 @@ The compiled program can be executed with the following command:
 `java -jar hmm_analyzer.jar -e "emissions file" -v "vector file" -s "states file" -o "observations file"`
 
 ### Model File Configurations
+See [Example_HMM](https://github.com/shefnic/HMM_Analyzer/tree/master/example_hmm) for example files.
+
 All files are read in as comma-separated text
 
 The models are read in to the program where the states and the observations are represented as integers.  State 0 is always the Start always emits the Start observation.
